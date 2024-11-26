@@ -3,6 +3,16 @@ export interface CorosCredentials {
   password: string;
 }
 
+export enum FileType {
+  fit = '4',
+  tcx = '3',
+  gpx = '1',
+  kml = '2',
+  csv = '0',
+}
+
+export type FileTypeKey = keyof typeof FileType;
+
 interface CorosCommonResponse {
   message: 'OK' | string;
   result: '0000' | string;
@@ -52,5 +62,17 @@ export type ActivitiesResponse = {
     totalPage: number;
     pageNumber: number;
     dataList: Activity[];
+  };
+} & CorosCommonResponse;
+
+export type ActivityResponse = {
+  data: {
+    summary: Activity[];
+  };
+} & CorosCommonResponse;
+
+export type ActivityDownloadResponse = {
+  data: {
+    fileUrl: string;
   };
 } & CorosCommonResponse;

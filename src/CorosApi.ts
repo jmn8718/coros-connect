@@ -2,8 +2,15 @@ import appRoot from 'app-root-path';
 import ky from 'ky';
 import dayjs from 'dayjs';
 import { createHash } from 'crypto';
-
-import { ActivitiesResponse, CorosCredentials, LoginResponse } from './types';
+import {
+  ActivitiesResponse,
+  ActivityDownloadResponse,
+  ActivityResponse,
+  CorosCredentials,
+  FileType,
+  FileTypeKey,
+  LoginResponse,
+} from './types';
 
 let config: CorosCredentials | undefined = undefined;
 
@@ -80,5 +87,48 @@ export default class CorosApi {
       .json();
 
     return response.data;
+  }
+
+  // this method fetchs more data than activity but there is no other know option
+  public async getActivityDetails(activityId: string): Promise<ActivityResponse['data']> {
+    if (!this._accessToken) {
+      throw new Error('Not logged in');
+    }
+    const response = await ky
+      .post<ActivityResponse>('activity/detail/query', {
+        prefixUrl: API_URL,
+        headers: {
+          accessToken: this._accessToken,
+        },
+        searchParams: new URLSearchParams({
+          // screenW: '1095',
+          // screenH: '797',
+          labelId: activityId,
+          sportType: '100',
+        }),
+      })
+      .json();
+    return response.data;
+  }
+
+  public async getActivityDownloadFile({ activityId, fileType }: { activityId: string; fileType: FileTypeKey }) {
+    if (!this._accessToken) {
+      throw new Error('Not logged in');
+    }
+    const response = await ky
+      .post<ActivityDownloadResponse>('activity/detail/download', {
+        prefixUrl: API_URL,
+        headers: {
+          accessToken: this._accessToken,
+        },
+        searchParams: new URLSearchParams({
+          labelId: activityId,
+          sportType: '100',
+          fileType: FileType[fileType],
+        }),
+      })
+      .json();
+
+    return response.data.fileUrl;
   }
 }

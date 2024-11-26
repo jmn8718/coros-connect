@@ -1,0 +1,8 @@
+# MAC
+.DS_Store
+
+# node
+node_modules
+dist
+
+coros.config.json

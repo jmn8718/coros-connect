@@ -1,0 +1,28 @@
+{
+  "name": "coros-connect",
+  "version": "0.0.1",
+  "description": "Interface to connect with Coros API",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build --clean && find ./dist -type d -empty -delete; tsc",
+    "example": "tsc example/index.ts",
+    "format:check": "biome format src",
+    "format:fix": "biome format --write src"
+  },
+  "keywords": [
+    "coros"
+  ],
+  "author": "Jose Miguel <jmn8718@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "22.10.0",
+    "typescript": "5.7.2"
+  },
+  "dependencies": {
+    "app-root-path": "3.1.0",
+    "dayjs": "1.11.13",
+    "ky": "1.7.2"
+  }
+}

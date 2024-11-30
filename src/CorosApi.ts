@@ -33,13 +33,15 @@ export default class CorosApi {
     this._credentials = credentials;
   }
 
-  async login() {
+  async login(email?: string, password?: string) {
     const response = await ky
       .post<LoginResponse>('account/login', {
         json: {
-          account: this._credentials.email,
+          account: email || this._credentials.email,
           accountType: 2,
-          pwd: createHash('md5').update(this._credentials.password).digest('hex'),
+          pwd: createHash('md5')
+            .update(password || this._credentials.password)
+            .digest('hex'),
         },
         prefixUrl: API_URL,
       })

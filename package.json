@@ -11,7 +11,9 @@
     "format:fix": "biome format --write src"
   },
   "keywords": [
-    "coros"
+    "coros",
+    "typescript",
+    "running"
   ],
   "author": "Jose Miguel <jmn8718@gmail.com>",
   "license": "MIT",

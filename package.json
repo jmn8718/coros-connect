@@ -1,6 +1,6 @@
 {
   "name": "coros-connect",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Interface to connect with Coros API",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,7 +8,8 @@
     "build": "tsc --build --clean && find ./dist -type d -empty -delete; tsc",
     "example": "tsc example/index.ts",
     "format:check": "biome format src",
-    "format:fix": "biome format --write src"
+    "format:fix": "biome format --write src",
+    "prepare": "npm run build"
   },
   "keywords": [
     "coros",
@@ -17,6 +18,21 @@
   ],
   "author": "Jose Miguel <jmn8718@gmail.com>",
   "license": "MIT",
+  "homepage": "https://github.com/jmn8718/coros-connect#readme",
+  "bugs": {
+    "url": "https://github.com/jmn8718/coros-connect/issues"
+  },
+  "files": [
+    "dist/*",
+    "examples/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmn8718/coros-connect.git"
+  },
+  "publishConfig": {
+    "@jmn8718:registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/node": "22.10.0",

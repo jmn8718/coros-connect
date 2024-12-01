@@ -20,7 +20,7 @@ interface CorosCommonResponse {
 }
 
 // there are more fields on the response
-interface UserResponse {
+export interface UserResponse {
   userId: string;
   nickname: string;
   email: string;
@@ -37,7 +37,7 @@ export type LoginResponse = {
 } & CorosCommonResponse;
 
 // there are more fields on the response
-interface Activity {
+export interface Activity {
   date: number;
   device: string;
   distance: number;

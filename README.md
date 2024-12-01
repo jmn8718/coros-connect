@@ -9,15 +9,30 @@ This project is inspired by:
 - [https://github.com/Pythe1337N/garmin-connect](https://github.com/Pythe1337N/garmin-connect)
 - [https://github.com/xballoy/coros-api](https://github.com/xballoy/coros-api)
 
-## Prerequisites
+## Instalation
 
-This library requires you to add a configuration file to your project root called `coros.config.json` containing your email and password.
+`npm install coros-connect`
+
+## Usage
+
+You can setup a configuration file on your project root called `coros.config.json` containing your email and password.
 
 ```json
 {
     "email": "my.email@example.com",
     "password": "MySecretPassword"
 }
+```
+
+Or you can provide on the constructor or `login` command.
+
+```js
+const coros = new CorosApi({
+    email: "my.email@example.com",
+    password: "MySecretPassword"
+});
+
+await coros.login("my.email@example.com","MySecretPassword");
 ```
 
 ## Functionality

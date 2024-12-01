@@ -1,5 +1,5 @@
 import ky from 'ky';
-import { createWriteStream } from 'node:fs';
+import { createWriteStream, existsSync, lstatSync, mkdirSync, writeFileSync } from 'node:fs';
 import { Readable } from 'node:stream';
 
 export async function downloadFile({
@@ -16,3 +16,15 @@ export async function downloadFile({
     throw new Error('Error downloading the file');
   }
 }
+
+export const isFile = (path: string) => existsSync(path) && lstatSync(path).isFile();
+
+export const isDirectory = (directoryPath: string) =>
+  existsSync(directoryPath) && lstatSync(directoryPath).isDirectory();
+
+export const createDirectory = (directoryPath: string) => mkdirSync(directoryPath);
+
+export const writeToFile = (filePath: string, data: any) =>
+  writeFileSync(filePath, data, {
+    encoding: 'utf-8',
+  });

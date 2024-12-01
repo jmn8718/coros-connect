@@ -11,6 +11,9 @@ import {
   FileTypeKey,
   LoginResponse,
 } from './types';
+import { isDirectory, isFile, createDirectory, writeToFile } from './utils';
+import path from 'node:path';
+import { readFileSync } from 'node:fs';
 
 let config: CorosCredentials | undefined = undefined;
 
@@ -22,6 +25,8 @@ try {
   // Do nothing
 }
 
+const TOKEN_FILE = 'token.txt';
+
 export default class CorosApi {
   private _credentials: CorosCredentials;
   private _accessToken?: string;
@@ -30,18 +35,57 @@ export default class CorosApi {
     if (!credentials) {
       throw new Error('Missing credentials');
     }
+    this._credentials = credentials || {
+      email: '',
+      password: '',
+    };
+  }
+
+  updateCredentials(credentials: CorosCredentials) {
     this._credentials = credentials;
   }
 
+  exportTokenToFile(directoryPath: string) {
+    console.log('export');
+    if (!isDirectory(directoryPath)) {
+      createDirectory(directoryPath);
+    }
+    writeToFile(path.join(directoryPath, TOKEN_FILE), this._accessToken);
+  }
+
+  loadTokenByFile(directoryPath: string): void {
+    if (!isDirectory(directoryPath)) {
+      throw new Error('loadTokenByFile: Directory not found: ' + directoryPath);
+    }
+    const filePath = path.join(directoryPath, TOKEN_FILE);
+    if (!isFile(filePath)) {
+      throw new Error('loadTokenByFile: File not found: ' + filePath);
+    }
+    const fileContent = readFileSync(filePath, {
+      encoding: 'utf-8',
+    });
+    console.log(fileContent);
+    this._accessToken = fileContent;
+  }
+
   async login(email?: string, password?: string) {
+    if ((!email && !this._credentials.email) || (!password && !this._credentials.password)) {
+      throw new Error('Missing credentials');
+    }
+    if (email) {
+      console.log('updating email');
+      this._credentials.email = email;
+    }
+    if (password) {
+      console.log('updating password');
+      this._credentials.password = password;
+    }
     const response = await ky
       .post<LoginResponse>('account/login', {
         json: {
-          account: email || this._credentials.email,
+          account: this._credentials.email,
           accountType: 2,
-          pwd: createHash('md5')
-            .update(password || this._credentials.password)
-            .digest('hex'),
+          pwd: createHash('md5').update(this._credentials.password).digest('hex'),
         },
         prefixUrl: API_URL,
       })
@@ -49,6 +93,7 @@ export default class CorosApi {
 
     const { accessToken, ...rest } = response.data;
     this._accessToken = accessToken;
+    console.log('x', rest);
     return rest;
   }
 

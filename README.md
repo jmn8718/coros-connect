@@ -35,6 +35,23 @@ const coros = new CorosApi({
 await coros.login("my.email@example.com","MySecretPassword");
 ```
 
+### Reuse token
+
+You can store the access token to a file so you can reuse the same token when creating a new client. 
+This is useful as you can get a 429 response from COROS Api.
+
+```js
+if (isDirectory(tokenFolder)) {
+    coros.loadTokenByFile(tokenFolder);
+} else {
+    await coros.login();
+    coros.exportTokenToFile(tokenFolder);
+}
+```
+
+⚠️ The token can expire at any time, and COROS Api does not provide any information about it, and it can no be extracted from the token. So it is up to you to handle Unauthorized errors from COROS Api to get a new valid token.
+
+
 ## Functionality
 
 This library only supports the following:
@@ -43,6 +60,7 @@ This library only supports the following:
 - Get list of activities.
 - Get activity detail (and other data used on the Coros page for the activity).
 - Download an activity file.
+- Store and reuse access token.
 
 ## Example
 

@@ -1,11 +1,21 @@
-import { CorosApi, downloadFile } from 'coros-connect';
+import { CorosApi, downloadFile, isDirectory } from 'coros-connect';
 import path from 'node:path';
 
 async function run() {
   console.log('run');
   const coros = new CorosApi();
 
-  await coros.login();
+  const tokenFolder = 'any.folder'
+
+  if (isDirectory(tokenFolder)) {
+    console.log('loading token from file');
+    coros.loadTokenByFile(tokenFolder);
+  } else {
+    await coros.login();
+    console.log('exporting token to file');
+    coros.exportTokenToFile(tokenFolder);
+  }
+
   const activitiesData = await coros.getActivitiesList({
     size: 3,
     page: 1,

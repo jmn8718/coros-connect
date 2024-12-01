@@ -3,3 +3,4 @@
 - Fetch activities list
 - Fetch activity details (and dashboard data)
 - Download activity file
+- Store and reuse access token.

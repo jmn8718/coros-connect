@@ -1,7 +1,7 @@
 import appRoot from 'app-root-path';
 import ky from 'ky';
 import dayjs from 'dayjs';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import {
   ActivitiesResponse,
   ActivityDownloadResponse,
@@ -55,11 +55,11 @@ export default class CorosApi {
 
   loadTokenByFile(directoryPath: string): void {
     if (!isDirectory(directoryPath)) {
-      throw new Error('loadTokenByFile: Directory not found: ' + directoryPath);
+      throw new Error(`loadTokenByFile: Directory not found: ${directoryPath}`);
     }
     const filePath = path.join(directoryPath, TOKEN_FILE);
     if (!isFile(filePath)) {
-      throw new Error('loadTokenByFile: File not found: ' + filePath);
+      throw new Error(`loadTokenByFile: File not found: ${filePath}`);
     }
     const fileContent = readFileSync(filePath, {
       encoding: 'utf-8',
@@ -93,7 +93,6 @@ export default class CorosApi {
 
     const { accessToken, ...rest } = response.data;
     this._accessToken = accessToken;
-    console.log('x', rest);
     return rest;
   }
 

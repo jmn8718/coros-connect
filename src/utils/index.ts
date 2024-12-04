@@ -24,6 +24,7 @@ export const isDirectory = (directoryPath: string) =>
 
 export const createDirectory = (directoryPath: string) => mkdirSync(directoryPath);
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const writeToFile = (filePath: string, data: any) =>
   writeFileSync(filePath, data, {
     encoding: 'utf-8',

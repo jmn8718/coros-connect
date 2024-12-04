@@ -1,3 +1,3 @@
 export { default as CorosApi } from './CorosApi';
-export { downloadFile, isDirectory } from './utils';
+export { createDirectory, downloadFile, isDirectory, isFile } from './utils';
 export * from './types';

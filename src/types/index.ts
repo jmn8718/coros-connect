@@ -38,6 +38,7 @@ export type LoginResponse = {
 
 // there are more fields on the response
 export interface Activity {
+  // format 20241130
   date: number;
   device: string;
   distance: number;
@@ -59,9 +60,9 @@ export interface Activity {
 export type ActivitiesResponse = {
   data: {
     count: number;
-    totalPage: number;
-    pageNumber: number;
-    dataList: Activity[];
+    totalPage?: number;
+    pageNumber?: number;
+    dataList?: Activity[];
   };
 } & CorosCommonResponse;
 
@@ -74,5 +75,26 @@ export type ActivityResponse = {
 export type ActivityDownloadResponse = {
   data: {
     fileUrl: string;
+  };
+} & CorosCommonResponse;
+
+export type ActivityUploadResponse = {
+  data: {
+    createTime: string;
+    fileUrl: string;
+    finishSize: number;
+    id: string;
+    idString: string;
+    md5: string;
+    originalFilename: string;
+    size: number;
+    source: number;
+    status: number;
+    taskImportPredicateSeconds: number;
+    taskImportRemainSeconds: number;
+    timezone: number;
+    unzipPredicateSeconds: number;
+    updateTime: string;
+    userId: string;
   };
 } & CorosCommonResponse;

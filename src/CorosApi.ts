@@ -11,6 +11,7 @@ import {
   ActivityResponse,
   ActivityUploadResponse,
   BucketDataResponse,
+  CorosCommonResponse,
   CorosCredentials,
   FileType,
   FileTypeKey,
@@ -114,7 +115,7 @@ export default class CorosApi {
 
     return response.data;
   }
-  
+
   public async getActivitiesList({
     page = 1,
     size = 20,
@@ -154,7 +155,7 @@ export default class CorosApi {
     return response.data;
   }
 
-  // this method fetchs more data than activity but there is no other know option
+  // this method fetches more data than activity but there is no other know option
   public async getActivityDetails(activityId: string): Promise<ActivityResponse['data']> {
     if (!this._accessToken) {
       throw new Error('Not logged in');
@@ -293,5 +294,22 @@ export default class CorosApi {
         baseURL: API_URL,
       })
       .then((res) => res.data);
+  }
+
+  public deleteActivity(activityId: string) {
+    if (!this._accessToken) {
+      throw new Error('Not logged in');
+    }
+    return ky
+      .get<CorosCommonResponse>('activity/delete', {
+        prefixUrl: API_URL,
+        headers: {
+          accessToken: this._accessToken,
+        },
+        searchParams: new URLSearchParams({
+          labelId: activityId,
+        }),
+      })
+      .json();
   }
 }

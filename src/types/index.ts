@@ -13,7 +13,7 @@ export enum FileType {
 
 export type FileTypeKey = keyof typeof FileType;
 
-interface CorosCommonResponse {
+export interface CorosCommonResponse {
   message: 'OK' | string;
   result: '0000' | string;
   apiCode: string;

@@ -1,19 +1,26 @@
 import appRoot from 'app-root-path';
 import ky from 'ky';
 import dayjs from 'dayjs';
+import axios from 'axios';
 import { createHash } from 'node:crypto';
+import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import {
   ActivitiesResponse,
   ActivityDownloadResponse,
   ActivityResponse,
+  ActivityUploadResponse,
+  BucketDataResponse,
   CorosCredentials,
   FileType,
   FileTypeKey,
   LoginResponse,
+  UploadGetListResponse,
+  UploadRemoveFromListResponse,
 } from './types';
-import { isDirectory, isFile, createDirectory, writeToFile } from './utils';
-import path from 'node:path';
-import { readFileSync } from 'node:fs';
+import { isDirectory, isFile, createDirectory, writeToFile, getFileExtension, getFileName } from './utils';
+import { calculateMd5, zip } from './utils/compress';
+import { uploadToS3 } from './utils/s3';
 
 let config: CorosCredentials | undefined = undefined;
 
@@ -46,7 +53,6 @@ export default class CorosApi {
   }
 
   exportTokenToFile(directoryPath: string) {
-    console.log('export');
     if (!isDirectory(directoryPath)) {
       createDirectory(directoryPath);
     }
@@ -64,7 +70,6 @@ export default class CorosApi {
     const fileContent = readFileSync(filePath, {
       encoding: 'utf-8',
     });
-    console.log(fileContent);
     this._accessToken = fileContent;
   }
 
@@ -73,11 +78,9 @@ export default class CorosApi {
       throw new Error('Missing credentials');
     }
     if (email) {
-      console.log('updating email');
       this._credentials.email = email;
     }
     if (password) {
-      console.log('updating password');
       this._credentials.password = password;
     }
     const response = await ky
@@ -96,6 +99,22 @@ export default class CorosApi {
     return rest;
   }
 
+  public async getAccount() {
+    if (!this._accessToken) {
+      throw new Error('Not logged in');
+    }
+    const response = await ky
+      .get<LoginResponse>('account/query', {
+        prefixUrl: API_URL,
+        headers: {
+          accessToken: this._accessToken,
+        },
+      })
+      .json();
+
+    return response.data;
+  }
+  
   public async getActivitiesList({
     page = 1,
     size = 20,
@@ -176,5 +195,103 @@ export default class CorosApi {
       .json();
 
     return response.data.fileUrl;
+  }
+
+  private async getBucketData() {
+    const result = await ky
+      .get<BucketDataResponse>('openapi/oss/sts', {
+        searchParams: {
+          bucket: 'coros-s3',
+          service: 'aws',
+          app_id: '1660188068672619112',
+          sign: '734331FB156B3E1B3B4842CF587A9D52',
+        },
+        prefixUrl: 'https://faq.coros.com',
+      })
+      .json();
+    return result.data;
+  }
+
+  public async removeFromImportList(importId: string) {
+    if (!this._accessToken) {
+      throw new Error('Not logged in');
+    }
+    const response = await ky
+      .post<UploadRemoveFromListResponse>('activity/fit/deleteSportImport', {
+        prefixUrl: API_URL,
+        headers: {
+          accessToken: this._accessToken,
+        },
+        json: {
+          importId,
+        },
+      })
+      .json();
+    return response;
+  }
+
+  public async getImportList() {
+    if (!this._accessToken) {
+      throw new Error('Not logged in');
+    }
+    const response = await ky
+      .post<UploadGetListResponse>('activity/fit/getImportSportList', {
+        prefixUrl: API_URL,
+        headers: {
+          accessToken: this._accessToken,
+        },
+        json: {
+          size: 10,
+        },
+      })
+      .json();
+    return response;
+  }
+
+  public async uploadActivityFile(filePath: string, userId: string) {
+    if (!this._accessToken) {
+      throw new Error('Not logged in');
+    }
+    const bucketData = await this.getBucketData();
+    const fileExtension = getFileExtension(filePath);
+    if (fileExtension !== 'fit' && fileExtension !== 'tcx') {
+      throw new Error('Only .fit or .tcx files supported');
+    }
+    const filename = getFileName(filePath);
+    const originalFilename = `${filename}.${fileExtension}`;
+    const md5 = calculateMd5(filePath);
+    const data = await zip(filePath, `${md5}/${originalFilename}`);
+
+    // coros uses the md5 of the activity file to identify the zip file
+    const remoteFilename = `fit_zip/${userId}/${md5}.zip`;
+    const uploadedFileSize = await uploadToS3(remoteFilename, data, bucketData);
+
+    const body = {
+      source: 1,
+      timezone: (-new Date().getTimezoneOffset() / 60) * 4,
+      bucket: bucketData.Bucket,
+      md5,
+      size: uploadedFileSize,
+      object: remoteFilename,
+      serviceName: 'aws',
+      oriFileName: originalFilename,
+    };
+    const formData = new FormData();
+    formData.append('jsonParameter', JSON.stringify(body));
+
+    // use axios because it does not work with other packages
+    return axios
+      .request<ActivityUploadResponse>({
+        url: '/activity/fit/import',
+        method: 'post',
+        headers: {
+          AccessToken: this._accessToken,
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 60 * 1000,
+        data: formData,
+        baseURL: API_URL,
+      })
+      .then((res) => res.data);
   }
 }

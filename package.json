@@ -39,8 +39,11 @@
     "typescript": "5.7.2"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.705.0",
     "app-root-path": "3.1.0",
+    "axios": "^1.7.9",
     "dayjs": "1.11.13",
+    "jszip": "^3.10.1",
     "ky": "1.7.2"
   }
 }

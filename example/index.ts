@@ -2,27 +2,30 @@ import { CorosApi, downloadFile, isDirectory } from 'coros-connect';
 import path from 'node:path';
 
 async function run() {
-  console.log('run');
   const coros = new CorosApi();
 
   const tokenFolder = 'any.folder'
 
+  let userId: string;
   if (isDirectory(tokenFolder)) {
     console.log('loading token from file');
     coros.loadTokenByFile(tokenFolder);
+    const user = await coros.getAccount()
+    userId = user.userId;
   } else {
-    await coros.login();
+    const user = await coros.login();
     console.log('exporting token to file');
     coros.exportTokenToFile(tokenFolder);
+    userId = user.userId;
   }
 
   const activitiesData = await coros.getActivitiesList({
     size: 3,
     page: 1,
   });
-  const activity = activitiesData.dataList[0];
 
   if (activitiesData.dataList) {
+    const activity = activitiesData.dataList[0];
     // get activity details by activity Id
     // same data as it is fetched from getActivitiesList
     const activityData = await coros.getActivityDetails(activity.labelId);
@@ -40,6 +43,10 @@ async function run() {
       filePath: path.join('.', `_${activity.labelId}.fit`),
     });
   }
+
+  // upload activity
+  const downloadFilePath = './my_activity_file.tcx';
+  await coros.uploadActivityFile(downloadFilePath, userId);
 }
 
 run();

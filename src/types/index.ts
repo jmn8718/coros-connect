@@ -78,23 +78,52 @@ export type ActivityDownloadResponse = {
   };
 } & CorosCommonResponse;
 
+interface ActivityUploadData {
+  createTime: string;
+  // if there is an error on the upload, this property exists
+  errorSize?: number;
+  fileUrl: string;
+  finishSize: number;
+  id: string;
+  idString: string;
+  md5: string;
+  originalFilename: string;
+  size: number;
+  source: number;
+  status: number;
+  taskImportPredicateSeconds: number;
+  taskImportRemainSeconds: number;
+  timezone: number;
+  unzipPredicateSeconds: number;
+  updateTime: string;
+  userId: string;
+}
+
 export type ActivityUploadResponse = {
+  data: ActivityUploadData;
+} & CorosCommonResponse;
+
+export type UploadGetListResponse = {
+  data: ActivityUploadData[];
+} & CorosCommonResponse;
+
+export type UploadRemoveFromListResponse = {
+  data: Omit<
+    ActivityUploadData,
+    'idString' | 'taskImportPredicateSeconds' | 'taskImportRemainSeconds' | 'unzipPredicateSeconds'
+  >[];
+} & CorosCommonResponse;
+
+export type BucketDataResponse = {
   data: {
-    createTime: string;
-    fileUrl: string;
-    finishSize: number;
-    id: string;
-    idString: string;
-    md5: string;
-    originalFilename: string;
-    size: number;
-    source: number;
-    status: number;
-    taskImportPredicateSeconds: number;
-    taskImportRemainSeconds: number;
-    timezone: number;
-    unzipPredicateSeconds: number;
-    updateTime: string;
-    userId: string;
+    AccessKeyId: string;
+    SecretAccessKey: string;
+    SessionToken: string;
+    Expiration: string;
+    TokenExpireTime: number;
+    Region: string;
+    Bucket: string;
+    SessionName: string;
+    AccessKeySecret: string;
   };
 } & CorosCommonResponse;

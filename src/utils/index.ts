@@ -1,5 +1,6 @@
 import ky from 'ky';
 import { createWriteStream, existsSync, lstatSync, mkdirSync, writeFileSync } from 'node:fs';
+import { basename, extname } from 'node:path';
 import { Readable } from 'node:stream';
 
 export async function downloadFile({
@@ -29,3 +30,11 @@ export const writeToFile = (filePath: string, data: any) =>
   writeFileSync(filePath, data, {
     encoding: 'utf-8',
   });
+
+export function getFileExtension(filePath: string) {
+  return extname(filePath).toLowerCase().replace('.', '');
+}
+
+export function getFileName(filePath: string) {
+  return basename(filePath.toLowerCase(), `.${getFileExtension(filePath)}`);
+}

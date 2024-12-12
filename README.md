@@ -61,6 +61,12 @@ This library only supports the following:
 - Get activity detail (and other data used on the Coros page for the activity).
 - Download an activity file.
 - Store and reuse access token.
+- Get profile
+- Upload activity file (*fit* and *tcx*) from other providers. (see upload notes on coros webapp).
+
+### TODO
+
+- [ ] Handle token expiration or invalid token. **NOTE** when you login using this package, it will automatically logout from the webapp (mobile app is ok). And when you login into the webapp, it will invalidate your token. So at the moment you have to handle this logic.
 
 ## Example
 

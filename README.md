@@ -63,6 +63,7 @@ This library only supports the following:
 - Store and reuse access token.
 - Get profile
 - Upload activity file (*fit* and *tcx*) from other providers. (see upload notes on coros webapp).
+- Delete activity
 
 ### TODO
 

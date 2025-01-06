@@ -1,3 +1,5 @@
+import { ActivityData } from './activity';
+
 export interface CorosCredentials {
   email: string;
   password: string;
@@ -67,9 +69,7 @@ export type ActivitiesResponse = {
 } & CorosCommonResponse;
 
 export type ActivityResponse = {
-  data: {
-    summary: Activity[];
-  };
+  data: ActivityData;
 } & CorosCommonResponse;
 
 export type ActivityDownloadResponse = {

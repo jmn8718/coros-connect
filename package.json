@@ -6,7 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc --build --clean && find ./dist -type d -empty -delete; tsc",
-    "example": "tsc example/index.ts",
+    "example": "tsx example/index.ts",
     "format:check": "biome format src",
     "format:fix": "biome format --write src",
     "prepare": "npm run build"
@@ -36,14 +36,15 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/node": "22.10.0",
+    "tsx": "^4.19.3",
     "typescript": "5.7.2"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.705.0",
+    "@aws-sdk/client-s3": "3.750.0",
     "app-root-path": "3.1.0",
-    "axios": "^1.7.9",
+    "axios": "1.7.9",
     "dayjs": "1.11.13",
-    "jszip": "^3.10.1",
+    "jszip": "3.10.1",
     "ky": "1.7.2"
   }
 }

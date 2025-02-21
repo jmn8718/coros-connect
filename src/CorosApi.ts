@@ -10,22 +10,23 @@ import {
   ActivityDownloadResponse,
   ActivityResponse,
   ActivityUploadResponse,
+  BucketCredentialsResponse,
   BucketDataResponse,
   CorosCommonResponse,
   CorosCredentials,
   FileType,
   FileTypeKey,
   LoginResponse,
+  STSConfig,
   UploadGetListResponse,
   UploadRemoveFromListResponse,
 } from './types';
 import { isDirectory, isFile, createDirectory, writeToFile, getFileExtension, getFileName } from './utils';
 import { calculateMd5, zip } from './utils/compress';
 import { uploadToS3 } from './utils/s3';
+import { API_URL, FAQ_API_URL, salt, STSConfigs } from './config';
 
 let config: CorosCredentials | undefined = undefined;
-
-const API_URL = 'https://teamapi.coros.com';
 
 try {
   config = appRoot.require('/coros.config.json');
@@ -39,6 +40,13 @@ export default class CorosApi {
   private _credentials: CorosCredentials;
   private _accessToken?: string;
 
+  private _apiUrl: string = API_URL;
+  private _faqApiUrl: string = FAQ_API_URL;
+  private _salt: string = salt;
+  private _stsConfig: STSConfig = STSConfigs.EN;
+  private _sign = 'E34EF0E34A498A54A9C3EAEFC12B7CAF';
+  private _appId = '1660188068672619112';
+
   constructor(credentials: CorosCredentials | undefined = config) {
     if (!credentials) {
       throw new Error('Missing credentials');
@@ -47,6 +55,27 @@ export default class CorosApi {
       email: '',
       password: '',
     };
+  }
+
+  config(
+    config: {
+      apiUrl?: string;
+      appId?: string;
+      sign?: string;
+      salt?: string;
+      faqApiUrl?: string;
+      stsConfig?: STSConfig;
+    } = {},
+  ) {
+    if (config.apiUrl) this._apiUrl = config.apiUrl;
+    if (config.appId) this._appId = config.appId;
+    if (config.salt) this._salt = config.salt;
+    if (config.sign) this._sign = config.sign;
+    if (config.faqApiUrl) this._faqApiUrl = config.faqApiUrl;
+    if (config.stsConfig) {
+      if (config.stsConfig.service === 'aliyun') throw new Error('Provider not implemented');
+      this._stsConfig = config.stsConfig;
+    }
   }
 
   updateCredentials(credentials: CorosCredentials) {
@@ -91,7 +120,7 @@ export default class CorosApi {
           accountType: 2,
           pwd: createHash('md5').update(this._credentials.password).digest('hex'),
         },
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
       })
       .json();
 
@@ -106,7 +135,7 @@ export default class CorosApi {
     }
     const response = await ky
       .get<LoginResponse>('account/query', {
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
         headers: {
           accessToken: this._accessToken,
         },
@@ -144,7 +173,7 @@ export default class CorosApi {
     }
     const response = await ky
       .get<ActivitiesResponse>('activity/query', {
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
         headers: {
           accessToken: this._accessToken,
         },
@@ -162,7 +191,7 @@ export default class CorosApi {
     }
     const response = await ky
       .post<ActivityResponse>('activity/detail/query', {
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
         headers: {
           accessToken: this._accessToken,
         },
@@ -183,7 +212,7 @@ export default class CorosApi {
     }
     const response = await ky
       .post<ActivityDownloadResponse>('activity/detail/download', {
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
         headers: {
           accessToken: this._accessToken,
         },
@@ -200,17 +229,19 @@ export default class CorosApi {
 
   private async getBucketData() {
     const result = await ky
-      .get<BucketDataResponse>('openapi/oss/sts', {
+      .get<BucketCredentialsResponse>('openapi/oss/sts', {
         searchParams: {
-          bucket: 'coros-s3',
-          service: 'aws',
-          app_id: '1660188068672619112',
-          sign: '734331FB156B3E1B3B4842CF587A9D52',
+          bucket: this._stsConfig.bucket,
+          service: this._stsConfig.service,
+          v: 2,
+          app_id: this._appId,
+          sign: this._sign,
         },
-        prefixUrl: 'https://faq.coros.com',
+        prefixUrl: this._faqApiUrl,
       })
       .json();
-    return result.data;
+
+    return JSON.parse(atob(result.data.credentials.replace(this._salt, ''))) as BucketDataResponse;
   }
 
   public async removeFromImportList(importId: string) {
@@ -219,7 +250,7 @@ export default class CorosApi {
     }
     const response = await ky
       .post<UploadRemoveFromListResponse>('activity/fit/deleteSportImport', {
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
         headers: {
           accessToken: this._accessToken,
         },
@@ -237,7 +268,7 @@ export default class CorosApi {
     }
     const response = await ky
       .post<UploadGetListResponse>('activity/fit/getImportSportList', {
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
         headers: {
           accessToken: this._accessToken,
         },
@@ -262,10 +293,10 @@ export default class CorosApi {
     const originalFilename = `${filename}.${fileExtension}`;
     const md5 = calculateMd5(filePath);
     const data = await zip(filePath, `${md5}/${originalFilename}`);
-
     // coros uses the md5 of the activity file to identify the zip file
     const remoteFilename = `fit_zip/${userId}/${md5}.zip`;
-    const uploadedFileSize = await uploadToS3(remoteFilename, data, bucketData);
+    await uploadToS3(remoteFilename, data, bucketData);
+    const uploadedFileSize = data.buffer.byteLength; // 1008540 real // 1008204 web
 
     const body = {
       source: 1,
@@ -274,7 +305,7 @@ export default class CorosApi {
       md5,
       size: uploadedFileSize,
       object: remoteFilename,
-      serviceName: 'aws',
+      serviceName: this._stsConfig.service,
       oriFileName: originalFilename,
     };
     const formData = new FormData();
@@ -291,7 +322,7 @@ export default class CorosApi {
         },
         timeout: 60 * 1000,
         data: formData,
-        baseURL: API_URL,
+        baseURL: this._apiUrl,
       })
       .then((res) => res.data);
   }
@@ -302,7 +333,7 @@ export default class CorosApi {
     }
     return ky
       .get<CorosCommonResponse>('activity/delete', {
-        prefixUrl: API_URL,
+        prefixUrl: this._apiUrl,
         headers: {
           accessToken: this._accessToken,
         },

@@ -1,8 +1,12 @@
-import { CorosApi, downloadFile, isDirectory } from 'coros-connect';
+import { CorosApi, downloadFile, isDirectory, STSConfigs } from 'coros-connect';
 import path from 'node:path';
 
 async function run() {
   const coros = new CorosApi();
+
+  coros.config({
+    stsConfig: STSConfigs.EN
+  })
 
   const tokenFolder = 'any.folder'
 

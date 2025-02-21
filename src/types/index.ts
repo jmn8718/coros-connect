@@ -114,16 +114,27 @@ export type UploadRemoveFromListResponse = {
   >[];
 } & CorosCommonResponse;
 
-export type BucketDataResponse = {
+export type BucketCredentialsResponse = {
   data: {
-    AccessKeyId: string;
-    SecretAccessKey: string;
-    SessionToken: string;
-    Expiration: string;
-    TokenExpireTime: number;
-    Region: string;
-    Bucket: string;
-    SessionName: string;
-    AccessKeySecret: string;
+    credentials: string;
+    v: '2';
   };
 } & CorosCommonResponse;
+
+export type BucketDataResponse = {
+  AccessKeyId: string;
+  SecretAccessKey: string;
+  SessionToken: string;
+  Expiration: string;
+  TokenExpireTime: number;
+  Region: string;
+  Bucket: string;
+  SessionName: string;
+  AccessKeySecret: string;
+};
+
+export type STSConfig = {
+  env: string;
+  bucket: string;
+  service: 'aws' | 'aliyun';
+};

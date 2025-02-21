@@ -1,3 +1,13 @@
+# 0.1.3
+
+- Configure coros client
+- Update upload activity file
+- Fix packages version
+
+# 0.1.2
+
+- Include typings
+
 # 0.1.1
 
 - Get profile

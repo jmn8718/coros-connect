@@ -2,10 +2,29 @@
   "name": "coros-connect",
   "version": "0.1.3",
   "description": "Interface to connect with Coros API",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "default": "./dist/index.mjs"
+    },
+    "./dist/*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.mjs",
+      "require": "./dist/*.cjs"
+    }
+  },
   "scripts": {
-    "build": "tsc --build --clean && find ./dist -type d -empty -delete; tsc",
+    "build": "find ./dist -type d -empty -delete; tsc && tsup",
     "example": "tsx example/index.ts",
     "format:check": "biome format src",
     "format:fix": "biome format --write src",
@@ -36,6 +55,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/node": "22.10.0",
+    "tsup": "^8.4.0",
     "tsx": "^4.19.3",
     "typescript": "5.7.2"
   },

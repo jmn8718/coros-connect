@@ -1,3 +1,8 @@
+# 0.1.4
+
+- Support ejs and cjs
+- Improve login error handling
+
 # 0.1.3
 
 - Configure coros client

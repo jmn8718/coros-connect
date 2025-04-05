@@ -16,6 +16,7 @@ import {
   CorosCredentials,
   FileType,
   FileTypeKey,
+  LoginErrorResponse,
   LoginResponse,
   STSConfig,
   UploadGetListResponse,
@@ -114,7 +115,7 @@ export default class CorosApi {
       this._credentials.password = password;
     }
     const response = await ky
-      .post<LoginResponse>('account/login', {
+      .post<LoginResponse | LoginErrorResponse>('account/login', {
         json: {
           account: this._credentials.email,
           accountType: 2,
@@ -124,9 +125,12 @@ export default class CorosApi {
       })
       .json();
 
-    const { accessToken, ...rest } = response.data;
-    this._accessToken = accessToken;
-    return rest;
+    if (response.result === '0000') {
+      const { accessToken, ...rest } = response.data;
+      this._accessToken = accessToken;
+      return rest;
+    }
+    throw new Error(response.message);
   }
 
   public async getAccount() {

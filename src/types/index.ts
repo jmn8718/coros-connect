@@ -32,11 +32,17 @@ export interface UserResponse {
   birthday: number;
 }
 
-export type LoginResponse = {
+export type LoginResponse = CorosCommonResponse & {
   data: {
     accessToken: string;
   } & UserResponse;
-} & CorosCommonResponse;
+  result: '0000';
+};
+
+export type LoginErrorResponse = CorosCommonResponse & {
+  tlogId: string;
+  result: '1030';
+};
 
 // there are more fields on the response
 export interface Activity {

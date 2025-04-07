@@ -24,7 +24,7 @@
     }
   },
   "scripts": {
-    "build": "find ./dist -type d -empty -delete; tsc && tsup",
+    "build": "find ./dist -type d -empty -delete; tsup",
     "example": "tsx example/index.ts",
     "format:check": "biome format src",
     "format:fix": "biome format --write src",

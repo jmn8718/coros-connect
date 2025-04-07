@@ -1,6 +1,8 @@
 # coros-connect
 
-Library to interact with COROS Api.
+Nodejs library to interact with COROS Api.
+
+⚠️ It does NOT support browser as it uses node libraries.
 
 ⚠️ This repository is using a **non-public API** from [COROS Training Hub](https://t.coros.com/) that could break
 anytime.
@@ -35,6 +37,17 @@ const coros = new CorosApi({
 await coros.login("my.email@example.com","MySecretPassword");
 ```
 
+## Configuration
+
+You can change some default configuration for the service to adapt to the *coros website* changes on the environment variable.
+
+```js
+// check properties that can be update from the function types
+coros.config({
+    stsConfig: STSConfigs.EU
+})
+```
+
 ### Reuse token
 
 You can store the access token to a file so you can reuse the same token when creating a new client. 
@@ -64,6 +77,7 @@ This library only supports the following:
 - Get profile
 - Upload activity file (*fit* and *tcx*) from other providers. (see upload notes on coros webapp).
 - Delete activity
+- Change configuration to adapt to different environment
 
 ### TODO
 
@@ -73,6 +87,6 @@ This library only supports the following:
 
 You can find one example on [here](./example/index.ts)
 
-## Licence
+## License
 
 [MIT License](LICENSE.md)

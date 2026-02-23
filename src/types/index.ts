@@ -1,23 +1,16 @@
 import { ActivityData } from './activity';
-
+import { FileType, ResponseCodes } from './enums';
+export * from './enums';
 export interface CorosCredentials {
   email: string;
   password: string;
-}
-
-export enum FileType {
-  fit = '4',
-  tcx = '3',
-  gpx = '1',
-  kml = '2',
-  csv = '0',
 }
 
 export type FileTypeKey = keyof typeof FileType;
 
 export interface CorosCommonResponse {
   message: 'OK' | string;
-  result: '0000' | string;
+  result: ResponseCodes.Success | string;
   apiCode: string;
 }
 
@@ -36,12 +29,12 @@ export type LoginResponse = CorosCommonResponse & {
   data: {
     accessToken: string;
   } & UserResponse;
-  result: '0000';
+  result: ResponseCodes.Success;
 };
 
 export type LoginErrorResponse = CorosCommonResponse & {
   tlogId: string;
-  result: '1030';
+  result: ResponseCodes.LoginError;
 };
 
 // there are more fields on the response

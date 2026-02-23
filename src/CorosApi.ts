@@ -16,8 +16,9 @@ import {
   CorosCredentials,
   FileType,
   FileTypeKey,
-  LoginErrorResponse,
   LoginResponse,
+  ResponseCodes,
+  SportTypes,
   STSConfig,
   UploadGetListResponse,
   UploadRemoveFromListResponse,
@@ -40,6 +41,7 @@ const TOKEN_FILE = 'token.txt';
 export default class CorosApi {
   private _credentials: CorosCredentials;
   private _accessToken?: string;
+  private _userId?: string;
 
   private _apiUrl: string = API_URL;
   private _faqApiUrl: string = FAQ_API_URL;
@@ -87,7 +89,9 @@ export default class CorosApi {
     if (!isDirectory(directoryPath)) {
       createDirectory(directoryPath);
     }
-    writeToFile(path.join(directoryPath, TOKEN_FILE), this._accessToken);
+    // Save both token and userId as JSON
+    const data = JSON.stringify({ accessToken: this._accessToken, userId: this._userId });
+    writeToFile(path.join(directoryPath, TOKEN_FILE), data);
   }
 
   loadTokenByFile(directoryPath: string): void {
@@ -101,7 +105,74 @@ export default class CorosApi {
     const fileContent = readFileSync(filePath, {
       encoding: 'utf-8',
     });
-    this._accessToken = fileContent;
+    // Try to parse as JSON (new format), fall back to plain token (old format)
+    try {
+      const data = JSON.parse(fileContent);
+      this._accessToken = data.accessToken;
+      this._userId = data.userId;
+    } catch {
+      // Legacy format: plain token string
+      this._accessToken = fileContent;
+    }
+  }
+
+  private getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {};
+    if (this._accessToken) {
+      headers.accessToken = this._accessToken;
+    }
+    if (this._userId) {
+      headers.yfheader = JSON.stringify({ userId: this._userId });
+    }
+    return headers;
+  }
+
+  private validateApiResponse<T extends CorosCommonResponse>(response: T): T {
+    if (response.result !== ResponseCodes.Success) {
+      throw new Error(`Coros API error: ${response.message} (code: ${response.result})`);
+    }
+    return response;
+  }
+
+  private async requestApi<T extends CorosCommonResponse>({
+    path,
+    method = 'get',
+    searchParams,
+    json,
+    prefixUrl = this._apiUrl,
+    authenticated = false,
+  }: {
+    path: string;
+    method?: 'get' | 'post';
+    searchParams?: URLSearchParams | Record<string, string | number>;
+    json?: unknown;
+    prefixUrl?: string;
+    authenticated?: boolean;
+  }): Promise<T> {
+    if (authenticated && !this._accessToken) {
+      throw new Error('Not logged in');
+    }
+
+    const headers = authenticated ? this.getAuthHeaders() : undefined;
+    const response =
+      method === 'post'
+        ? await ky
+            .post<T>(path, {
+              prefixUrl,
+              headers,
+              searchParams,
+              json,
+            })
+            .json()
+        : await ky
+            .get<T>(path, {
+              prefixUrl,
+              headers,
+              searchParams,
+            })
+            .json();
+
+    return this.validateApiResponse(response);
   }
 
   async login(email?: string, password?: string) {
@@ -114,37 +185,27 @@ export default class CorosApi {
     if (password) {
       this._credentials.password = password;
     }
-    const response = await ky
-      .post<LoginResponse | LoginErrorResponse>('account/login', {
-        json: {
-          account: this._credentials.email,
-          accountType: 2,
-          pwd: createHash('md5').update(this._credentials.password).digest('hex'),
-        },
-        prefixUrl: this._apiUrl,
-      })
-      .json();
+    const response = await this.requestApi<LoginResponse>({
+      path: 'account/login',
+      method: 'post',
+      json: {
+        account: this._credentials.email,
+        accountType: 2,
+        pwd: createHash('md5').update(this._credentials.password).digest('hex'),
+      },
+    });
 
-    if (response.result === '0000') {
-      const { accessToken, ...rest } = response.data;
-      this._accessToken = accessToken;
-      return rest;
-    }
-    throw new Error(response.message);
+    const { accessToken, userId, ...rest } = response.data;
+    this._accessToken = accessToken;
+    this._userId = userId;
+    return { userId, ...rest };
   }
 
   public async getAccount() {
-    if (!this._accessToken) {
-      throw new Error('Not logged in');
-    }
-    const response = await ky
-      .get<LoginResponse>('account/query', {
-        prefixUrl: this._apiUrl,
-        headers: {
-          accessToken: this._accessToken,
-        },
-      })
-      .json();
+    const response = await this.requestApi<LoginResponse>({
+      path: 'account/query',
+      authenticated: true,
+    });
 
     return response.data;
   }
@@ -160,9 +221,6 @@ export default class CorosApi {
     from?: Date;
     to?: Date;
   }): Promise<ActivitiesResponse['data']> {
-    if (!this._accessToken) {
-      throw new Error('Not logged in');
-    }
     const searchParams = new URLSearchParams({
       size: String(size),
       pageNumber: String(page),
@@ -173,114 +231,93 @@ export default class CorosApi {
     }
     if (to) {
       // add "to" to searchParams
-      searchParams.append('endDay', dayjs(from).format('YYYYMMDD'));
+      searchParams.append('endDay', dayjs(to).format('YYYYMMDD'));
     }
-    const response = await ky
-      .get<ActivitiesResponse>('activity/query', {
-        prefixUrl: this._apiUrl,
-        headers: {
-          accessToken: this._accessToken,
-        },
-        searchParams,
-      })
-      .json();
+    const response = await this.requestApi<ActivitiesResponse>({
+      path: 'activity/query',
+      searchParams,
+      authenticated: true,
+    });
 
     return response.data;
   }
 
-  // this method fetches more data than activity but there is no other know option
-  public async getActivityDetails(activityId: string): Promise<ActivityResponse['data']> {
-    if (!this._accessToken) {
-      throw new Error('Not logged in');
-    }
-    const response = await ky
-      .post<ActivityResponse>('activity/detail/query', {
-        prefixUrl: this._apiUrl,
-        headers: {
-          accessToken: this._accessToken,
-        },
-        searchParams: new URLSearchParams({
-          // screenW: '1095',
-          // screenH: '797',
-          labelId: activityId,
-          sportType: '100',
-        }),
-      })
-      .json();
+  // this method fetches more data than activity but there is no other known option
+  public async getActivityDetails(
+    activityId: string,
+    sportType: SportTypes | string = SportTypes.Running,
+  ): Promise<ActivityResponse['data']> {
+    const response = await this.requestApi<ActivityResponse>({
+      path: 'activity/detail/query',
+      method: 'post',
+      searchParams: new URLSearchParams({
+        // screenW: '1095',
+        // screenH: '797',
+        labelId: activityId,
+        sportType,
+      }),
+      authenticated: true,
+    });
+
     return response.data;
   }
 
-  public async getActivityDownloadFile({ activityId, fileType }: { activityId: string; fileType: FileTypeKey }) {
-    if (!this._accessToken) {
-      throw new Error('Not logged in');
-    }
-    const response = await ky
-      .post<ActivityDownloadResponse>('activity/detail/download', {
-        prefixUrl: this._apiUrl,
-        headers: {
-          accessToken: this._accessToken,
-        },
-        searchParams: new URLSearchParams({
-          labelId: activityId,
-          sportType: '100',
-          fileType: FileType[fileType],
-        }),
-      })
-      .json();
+  public async getActivityDownloadFile({
+    activityId,
+    fileType,
+    sportType = SportTypes.Running,
+  }: { activityId: string; fileType: FileTypeKey; sportType?: SportTypes | string }) {
+    const response = await this.requestApi<ActivityDownloadResponse>({
+      path: 'activity/detail/download',
+      method: 'post',
+      searchParams: new URLSearchParams({
+        labelId: activityId,
+        sportType,
+        fileType: FileType[fileType],
+      }),
+      authenticated: true,
+    });
 
     return response.data.fileUrl;
   }
 
   private async getBucketData() {
-    const result = await ky
-      .get<BucketCredentialsResponse>('openapi/oss/sts', {
-        searchParams: {
-          bucket: this._stsConfig.bucket,
-          service: this._stsConfig.service,
-          v: 2,
-          app_id: this._appId,
-          sign: this._sign,
-        },
-        prefixUrl: this._faqApiUrl,
-      })
-      .json();
+    const result = await this.requestApi<BucketCredentialsResponse>({
+      path: 'openapi/oss/sts',
+      searchParams: {
+        bucket: this._stsConfig.bucket,
+        service: this._stsConfig.service,
+        v: 2,
+        app_id: this._appId,
+        sign: this._sign,
+      },
+      prefixUrl: this._faqApiUrl,
+    });
 
     return JSON.parse(atob(result.data.credentials.replace(this._salt, ''))) as BucketDataResponse;
   }
 
   public async removeFromImportList(importId: string) {
-    if (!this._accessToken) {
-      throw new Error('Not logged in');
-    }
-    const response = await ky
-      .post<UploadRemoveFromListResponse>('activity/fit/deleteSportImport', {
-        prefixUrl: this._apiUrl,
-        headers: {
-          accessToken: this._accessToken,
-        },
-        json: {
-          importId,
-        },
-      })
-      .json();
+    const response = await this.requestApi<UploadRemoveFromListResponse>({
+      path: 'activity/fit/deleteSportImport',
+      method: 'post',
+      json: {
+        importId,
+      },
+      authenticated: true,
+    });
     return response;
   }
 
   public async getImportList() {
-    if (!this._accessToken) {
-      throw new Error('Not logged in');
-    }
-    const response = await ky
-      .post<UploadGetListResponse>('activity/fit/getImportSportList', {
-        prefixUrl: this._apiUrl,
-        headers: {
-          accessToken: this._accessToken,
-        },
-        json: {
-          size: 10,
-        },
-      })
-      .json();
+    const response = await this.requestApi<UploadGetListResponse>({
+      path: 'activity/fit/getImportSportList',
+      method: 'post',
+      json: {
+        size: 10,
+      },
+      authenticated: true,
+    });
     return response;
   }
 
@@ -321,30 +358,23 @@ export default class CorosApi {
         url: '/activity/fit/import',
         method: 'post',
         headers: {
-          AccessToken: this._accessToken,
+          ...this.getAuthHeaders(),
           'Content-Type': 'multipart/form-data',
         },
         timeout: 60 * 1000,
         data: formData,
         baseURL: this._apiUrl,
       })
-      .then((res) => res.data);
+      .then((res) => this.validateApiResponse(res.data));
   }
 
   public deleteActivity(activityId: string) {
-    if (!this._accessToken) {
-      throw new Error('Not logged in');
-    }
-    return ky
-      .get<CorosCommonResponse>('activity/delete', {
-        prefixUrl: this._apiUrl,
-        headers: {
-          accessToken: this._accessToken,
-        },
-        searchParams: new URLSearchParams({
-          labelId: activityId,
-        }),
-      })
-      .json();
+    return this.requestApi<CorosCommonResponse>({
+      path: 'activity/delete',
+      searchParams: new URLSearchParams({
+        labelId: activityId,
+      }),
+      authenticated: true,
+    });
   }
 }

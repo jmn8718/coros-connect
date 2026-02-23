@@ -1,3 +1,13 @@
+# 0.1.5
+
+- Refactor Coros API calls through a shared request/response handler
+- Add `yfheader` authentication support with `userId`
+- Persist token file as JSON (`accessToken` + `userId`) with backward compatibility
+- Add activity update methods (name and perception)
+- Add comments API methods (add, remove, list)
+- Add comment response typings and shared enums
+- Fix activities date range query `endDay` handling
+
 # 0.1.4
 
 - Support ejs and cjs

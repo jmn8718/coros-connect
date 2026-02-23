@@ -34,10 +34,10 @@ importers:
         specifier: 22.10.0
         version: 22.10.0
       tsup:
-        specifier: ^8.4.0
+        specifier: 8.4.0
         version: 8.4.0(tsx@4.19.3)(typescript@5.7.2)
       tsx:
-        specifier: ^4.19.3
+        specifier: 4.19.3
         version: 4.19.3
       typescript:
         specifier: 5.7.2

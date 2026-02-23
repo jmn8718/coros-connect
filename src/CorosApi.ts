@@ -377,4 +377,42 @@ export default class CorosApi {
       authenticated: true,
     });
   }
+
+  public updateActivityName({ labelId, name }: { labelId: string; name: string }) {
+    return this.requestApi<CorosCommonResponse>({
+      path: 'activity/update',
+      method: 'post',
+      json: {
+        labelId,
+        name,
+        type: 1,
+      },
+      authenticated: true,
+    });
+  }
+
+  public updateActivityPerception({
+    labelId,
+    feelType,
+    sportNote,
+  }: {
+    labelId: string;
+    feelType: 1 | 2 | 3 | 4 | 5;
+    sportNote: string;
+  }) {
+    if (feelType < 1 || feelType > 5) {
+      throw new Error('feelType must be between 1 and 5');
+    }
+
+    return this.requestApi<CorosCommonResponse>({
+      path: 'activity/update',
+      method: 'post',
+      json: {
+        labelId,
+        feelType,
+        sportNote,
+      },
+      authenticated: true,
+    });
+  }
 }

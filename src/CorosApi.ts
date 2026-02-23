@@ -17,6 +17,8 @@ import {
   FileType,
   FileTypeKey,
   LoginResponse,
+  ActivityComment,
+  ListCommentsResponse,
   ResponseCodes,
   SportTypes,
   STSConfig,
@@ -414,5 +416,39 @@ export default class CorosApi {
       },
       authenticated: true,
     });
+  }
+
+  public addComment({ dataId, content }: { dataId: string; content: string }) {
+    return this.requestApi<CorosCommonResponse>({
+      path: 'leavingmessage/add',
+      method: 'post',
+      json: {
+        type: 1,
+        dataId,
+        content,
+        messageType: 1,
+      },
+      authenticated: true,
+    });
+  }
+
+  public removeComment(commentId: string) {
+    return this.requestApi<CorosCommonResponse>({
+      path: 'leavingmessage/delete',
+      method: 'post',
+      json: [commentId],
+      authenticated: true,
+    });
+  }
+
+  public listComments(activityId: string): Promise<ActivityComment[]> {
+    return this.requestApi<ListCommentsResponse>({
+      path: 'leavingmessage/list',
+      searchParams: new URLSearchParams({
+        dataId: activityId,
+        type: '1',
+      }),
+      authenticated: true,
+    }).then((response) => response.data || []);
   }
 }

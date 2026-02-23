@@ -113,6 +113,23 @@ export type UploadRemoveFromListResponse = {
   >[];
 } & CorosCommonResponse;
 
+export interface ActivityComment {
+  content: string;
+  createTime: number;
+  id: string;
+  type: number;
+  userInfo: UserResponse & {
+    enableAppDataConfig: boolean;
+    sex: number;
+    stature: number;
+    weight: number;
+  };
+}
+
+export type ListCommentsResponse = {
+  data: ActivityComment[] | null;
+} & CorosCommonResponse;
+
 export type BucketCredentialsResponse = {
   data: {
     credentials: string;

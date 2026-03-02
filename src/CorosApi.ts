@@ -73,12 +73,12 @@ export default class CorosApi {
     } = {},
   ) {
     if (config.stsConfig) {
-		  if (config.stsConfig.service === "aliyun") throw new Error("Provider not implemented");
-		  this._stsConfig = config.stsConfig;
-		  if (config.stsConfig === STSConfigs.EU) {
-			  this._apiUrl = EU_API_URL;
-		  }
-	  }
+      if (config.stsConfig.service === 'aliyun') throw new Error('Provider not implemented');
+      this._stsConfig = config.stsConfig;
+      if (config.stsConfig === STSConfigs.EU) {
+        this._apiUrl = EU_API_URL;
+      }
+    }
     if (config.apiUrl) this._apiUrl = config.apiUrl;
     if (config.appId) this._appId = config.appId;
     if (config.salt) this._salt = config.salt;

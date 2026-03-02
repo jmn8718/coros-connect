@@ -1,3 +1,10 @@
+# 0.1.6
+
+- Update dependencies to fix security issues
+- Apply project formatting improvements
+- Separate and refresh usage examples
+- Add API URL support for European users
+
 # 0.1.5
 
 - Refactor Coros API calls through a shared request/response handler

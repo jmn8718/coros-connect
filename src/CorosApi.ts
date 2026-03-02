@@ -133,8 +133,11 @@ export default class CorosApi {
   }
 
   private validateApiResponse<T extends CorosCommonResponse>(response: T): T {
-    if (response.result !== ResponseCodes.Success) {
+    if ('result' in response && response.result !== ResponseCodes.Success) {
       throw new Error(`Coros API error: ${response.message} (code: ${response.result})`);
+    }
+    else if ('code' in response && response.code !== 200) {
+      throw new Error(`Coros API error: ${response.message} (HTTP code: ${response.code})`);
     }
     return response;
   }

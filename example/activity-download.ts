@@ -24,16 +24,13 @@ async function run() {
   }
 
   const activitiesData = await coros.getActivitiesList({
-    size: 3,
+    size: 1,
     page: 1,
   });
 
   if (activitiesData.dataList) {
     const activity = activitiesData.dataList[0];
-    // get activity details by activity Id
-    // same data as it is fetched from getActivitiesList
-    const activityData = await coros.getActivityDetails(activity.labelId);
-    
+
     // get file url to download
     const fileUrl = await coros.getActivityDownloadFile({
       activityId: activity.labelId,
@@ -47,7 +44,6 @@ async function run() {
       filePath: path.join('.', `_${activity.labelId}.fit`),
     });
   }
-
   // upload activity
   const downloadFilePath = './my_activity_file.tcx';
   await coros.uploadActivityFile(downloadFilePath, userId);

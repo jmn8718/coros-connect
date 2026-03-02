@@ -77,6 +77,7 @@ export default class CorosApi {
       this._stsConfig = config.stsConfig;
       if (config.stsConfig === STSConfigs.EU) {
         this._apiUrl = EU_API_URL;
+        this._sign = "877571111A1EE5316E4B590103D4B5B3";
       }
     }
     if (config.apiUrl) this._apiUrl = config.apiUrl;

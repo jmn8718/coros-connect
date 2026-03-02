@@ -28,7 +28,7 @@ import {
 import { isDirectory, isFile, createDirectory, writeToFile, getFileExtension, getFileName } from './utils';
 import { calculateMd5, zip } from './utils/compress';
 import { uploadToS3 } from './utils/s3';
-import { API_URL, FAQ_API_URL, salt, STSConfigs } from './config';
+import { API_URL, EU_API_URL, FAQ_API_URL, salt, STSConfigs } from './config';
 
 let config: CorosCredentials | undefined = undefined;
 
@@ -72,15 +72,18 @@ export default class CorosApi {
       stsConfig?: STSConfig;
     } = {},
   ) {
+    if (config.stsConfig) {
+		  if (config.stsConfig.service === "aliyun") throw new Error("Provider not implemented");
+		  this._stsConfig = config.stsConfig;
+		  if (config.stsConfig === STSConfigs.EU) {
+			  this._apiUrl = EU_API_URL;
+		  }
+	  }
     if (config.apiUrl) this._apiUrl = config.apiUrl;
     if (config.appId) this._appId = config.appId;
     if (config.salt) this._salt = config.salt;
     if (config.sign) this._sign = config.sign;
     if (config.faqApiUrl) this._faqApiUrl = config.faqApiUrl;
-    if (config.stsConfig) {
-      if (config.stsConfig.service === 'aliyun') throw new Error('Provider not implemented');
-      this._stsConfig = config.stsConfig;
-    }
   }
 
   updateCredentials(credentials: CorosCredentials) {

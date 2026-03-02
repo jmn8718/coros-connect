@@ -23,4 +23,6 @@ export const salt = '9y78gpoERW4lBNYL';
 
 export const API_URL = 'https://teamapi.coros.com';
 
+export const EU_API_URL = "https://teameuapi.coros.com";
+
 export const FAQ_API_URL = 'https://faq.coros.com';

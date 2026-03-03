@@ -1,0 +1,101 @@
+name: Create Tag and Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    if: ${{ startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse version from commit message
+        id: parse
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          message="$COMMIT_MESSAGE"
+          first_line="${message%%$'\n'*}"
+
+          if [[ "$first_line" =~ ^chore\(release\):[[:space:]]*v?([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            version="${BASH_REMATCH[1]}"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+            echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          else
+            echo "Invalid release commit message format: $first_line"
+            echo "Expected: chore(release): 0.1.7"
+            exit 1
+          fi
+
+      - name: Validate package version matches commit version
+        run: |
+          commit_version="${{ steps.parse.outputs.version }}"
+          package_version="$(node -p "require('./package.json').version")"
+
+          if [[ "$package_version" != "$commit_version" ]]; then
+            echo "Version mismatch detected"
+            echo "Commit version:  $commit_version"
+            echo "package.json:    $package_version"
+            exit 1
+          fi
+
+          echo "Version check passed: $package_version"
+
+      - name: Create tag if missing
+        uses: actions/github-script@v7
+        env:
+          TAG: ${{ steps.parse.outputs.tag }}
+        with:
+          script: |
+            const tag = process.env.TAG;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+
+            try {
+              await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` });
+              core.info(`Tag ${tag} already exists`);
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/tags/${tag}`,
+                sha,
+              });
+              core.info(`Created tag ${tag} at ${sha}`);
+            }
+
+      - name: Create GitHub release if missing
+        uses: actions/github-script@v7
+        env:
+          TAG: ${{ steps.parse.outputs.tag }}
+          VERSION: ${{ steps.parse.outputs.version }}
+        with:
+          script: |
+            const tag = process.env.TAG;
+            const version = process.env.VERSION;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            try {
+              await github.rest.repos.getReleaseByTag({ owner, repo, tag });
+              core.info(`Release for ${tag} already exists`);
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                name: tag,
+                target_commitish: context.sha,
+                generate_release_notes: true,
+              });
+              core.info(`Created release ${tag} for version ${version}`);
+            }

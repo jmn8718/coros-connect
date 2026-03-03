@@ -85,7 +85,12 @@ This library only supports the following:
 
 ## Example
 
-You can find one example on [here](./example/index.ts)
+You can find some examples [here](./example)
+
+## Contributing
+
+- Contributor guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Release process: [RELEASE.md](./RELEASE.md)
 
 ## License
 

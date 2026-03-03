@@ -1,3 +1,9 @@
+# 0.1.7
+
+- Fix API signing behavior for the EU API URL flow
+- Add support for FAQ-based API response validation
+- Refactor API internals by extracting constants
+
 # 0.1.6
 
 - Update dependencies to fix security issues

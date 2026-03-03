@@ -1,6 +1,6 @@
 {
   "name": "coros-connect",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Interface to connect with Coros API",
   "type": "module",
   "types": "dist/index.d.ts",

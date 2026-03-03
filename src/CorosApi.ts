@@ -28,7 +28,7 @@ import {
 import { isDirectory, isFile, createDirectory, writeToFile, getFileExtension, getFileName } from './utils';
 import { calculateMd5, zip } from './utils/compress';
 import { uploadToS3 } from './utils/s3';
-import { API_URL, EU_API_URL, FAQ_API_URL, salt, STSConfigs } from './config';
+import { API_URL, APP_ID, EU_API_URL, EU_SIGN, FAQ_API_URL, salt, SIGN, STSConfigs } from './config';
 
 let config: CorosCredentials | undefined = undefined;
 
@@ -49,8 +49,8 @@ export default class CorosApi {
   private _faqApiUrl: string = FAQ_API_URL;
   private _salt: string = salt;
   private _stsConfig: STSConfig = STSConfigs.EN;
-  private _sign = 'E34EF0E34A498A54A9C3EAEFC12B7CAF';
-  private _appId = '1660188068672619112';
+  private _sign = SIGN;
+  private _appId = APP_ID;
 
   constructor(credentials: CorosCredentials | undefined = config) {
     if (!credentials) {
@@ -73,11 +73,11 @@ export default class CorosApi {
     } = {},
   ) {
     if (config.stsConfig) {
-      if (config.stsConfig.service === 'aliyun') throw new Error('Provider not implemented');
+      if (config.stsConfig.service === STSConfigs.CN.service) throw new Error('Provider not implemented');
       this._stsConfig = config.stsConfig;
       if (config.stsConfig === STSConfigs.EU) {
         this._apiUrl = EU_API_URL;
-        this._sign = "877571111A1EE5316E4B590103D4B5B3";
+        this._sign = EU_SIGN;
       }
     }
     if (config.apiUrl) this._apiUrl = config.apiUrl;
@@ -136,8 +136,8 @@ export default class CorosApi {
   private validateApiResponse<T extends CorosCommonResponse>(response: T): T {
     if ('result' in response && response.result !== ResponseCodes.Success) {
       throw new Error(`Coros API error: ${response.message} (code: ${response.result})`);
-    }
-    else if ('code' in response && response.code !== 200) {
+      // biome-ignore lint/style/noUselessElse: <explanation>
+    } else if ('code' in response && response.code !== 200) {
       throw new Error(`Coros API error: ${response.message} (HTTP code: ${response.code})`);
     }
     return response;

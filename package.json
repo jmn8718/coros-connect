@@ -2,8 +2,22 @@
   "name": "@nyt87/crs-connect",
   "version": "0.1.7",
   "description": "Interface to connect with Coros API",
+  "keywords": [
+    "coros",
+    "typescript",
+    "running"
+  ],
+  "homepage": "https://github.com/jmn8718/coros-connect#readme",
+  "bugs": {
+    "url": "https://github.com/jmn8718/coros-connect/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmn8718/coros-connect.git"
+  },
+  "license": "MIT",
+  "author": "NYT87 <nyt87@proton.me>",
   "type": "module",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -22,6 +36,15 @@
       "require": "./dist/*.cjs"
     }
   },
+  "main": "index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "example": "example"
+  },
+  "files": [
+    "dist/*",
+    "examples/*"
+  ],
   "scripts": {
     "build": "find ./dist -type d -empty -delete; tsup",
     "example": "tsx example/activities.ts",
@@ -30,27 +53,13 @@
     "format:fix": "biome format --write src",
     "prepare": "npm run build"
   },
-  "keywords": [
-    "coros",
-    "typescript",
-    "running"
-  ],
-  "author": "NYT87 <nyt87@proton.me>",
-  "license": "MIT",
-  "homepage": "https://github.com/jmn8718/coros-connect#readme",
-  "bugs": {
-    "url": "https://github.com/jmn8718/coros-connect/issues"
-  },
-  "files": [
-    "dist/*",
-    "examples/*"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jmn8718/coros-connect.git"
-  },
-  "publishConfig": {
-    "@nyt87:registry": "https://npm.pkg.github.com"
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1000.0",
+    "app-root-path": "3.1.0",
+    "axios": "1.13.6",
+    "dayjs": "1.11.13",
+    "jszip": "3.10.1",
+    "ky": "1.7.2"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -59,12 +68,7 @@
     "tsx": "4.19.3",
     "typescript": "5.7.2"
   },
-  "dependencies": {
-    "@aws-sdk/client-s3": "3.1000.0",
-    "app-root-path": "3.1.0",
-    "axios": "1.13.6",
-    "dayjs": "1.11.13",
-    "jszip": "3.10.1",
-    "ky": "1.7.2"
+  "publishConfig": {
+    "access": "public"
   }
 }

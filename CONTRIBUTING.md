@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to coros-connect.
+Thanks for your interest in contributing to @nyt87/crs-connect.
 
 ## How to Contribute
 

@@ -1,5 +1,5 @@
 {
-  "name": "coros-connect",
+  "name": "@nyt87/crs-connect",
   "version": "0.1.7",
   "description": "Interface to connect with Coros API",
   "type": "module",
@@ -35,7 +35,7 @@
     "typescript",
     "running"
   ],
-  "author": "Jose Miguel <jmn8718@gmail.com>",
+  "author": "NYT87 <nyt87@proton.me>",
   "license": "MIT",
   "homepage": "https://github.com/jmn8718/coros-connect#readme",
   "bugs": {
@@ -50,7 +50,7 @@
     "url": "git+https://github.com/jmn8718/coros-connect.git"
   },
   "publishConfig": {
-    "@jmn8718:registry": "https://npm.pkg.github.com"
+    "@nyt87:registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

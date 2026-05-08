@@ -1,4 +1,4 @@
-import { CorosApi, isDirectory, STSConfigs } from 'coros-connect';
+import { CorosApi, isDirectory, STSConfigs } from '@nyt87/crs-connect';
 
 async function run() {
   const coros = new CorosApi();

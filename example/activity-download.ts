@@ -1,4 +1,4 @@
-import { CorosApi, downloadFile, isDirectory, STSConfigs } from 'coros-connect';
+import { CorosApi, downloadFile, isDirectory, STSConfigs } from '@nyt87/crs-connect';
 import path from 'node:path';
 
 async function run() {

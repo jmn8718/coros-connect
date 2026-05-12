@@ -7,11 +7,11 @@ Nodejs library to interact with COROS WEB Api.
 ⚠️ This repository is using a **non-public API** from [COROS Training Hub](https://t.coros.com/) that could break
 anytime.
 
-## Notice
+> [!IMPORTANT]
+> COROS is a registered trademark of Guangdong COROS Sports Technology Co., Ltd. or its subsidiaries. This project is an independent, open-source tool and is not affiliated with, endorsed by, sponsored by, or approved by COROS.
 
-This is an unofficial community package. It is not released, authorized, sponsored, or endorsed by COROS.
-
-COROS and related marks are trademarks owned by Guangdong COROS Sports Technology Co., Ltd. This package was renamed from `coros-connect` to `@nyt87/crs-connect` to avoid user confusion.
+> [!NOTE]
+> This package was renamed from `coros-connect` to `@nyt87/crs-connect` to avoid user confusion.
 
 This project is inspired by:
 - [https://github.com/Pythe1337N/garmin-connect](https://github.com/Pythe1337N/garmin-connect)
